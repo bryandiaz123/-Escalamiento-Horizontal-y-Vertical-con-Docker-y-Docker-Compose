@@ -1,0 +1,25 @@
+services:
+  app:
+    build: .
+    # No publicar puerto directamente al host — Nginx maneja el tráfico
+    # Permite escalar con: docker compose up --scale app=3
+    expose:
+      - "3000"
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./docker/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - app
+    # ─── Escalamiento VERTICAL del balanceador ───────────────────────────────
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"       # Máximo 1 CPU lógica
+          memory: 256M      # Máximo 256 MB de RAM
+        reservations:
+          cpus: "0.5"       # Garantizado 0.5 CPU
+          memory: 128M      # Garantizado 128 MB de RAM
